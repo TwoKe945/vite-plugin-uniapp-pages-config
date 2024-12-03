@@ -1,0 +1,6 @@
+{
+  "index.vue": {
+    "tabBar": true,
+    "navigationBarTitleText": "首页"
+  }
+}
