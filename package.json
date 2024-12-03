@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-uniapp-pages-config",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -49,6 +49,7 @@
     "@types/ejs": "^3.1.5",
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^22.10.1",
+    "bumpp": "^9.8.1",
     "ejs": "^3.1.10",
     "fast-glob": "^3.3.2",
     "unbuild": "^2.0.0"
