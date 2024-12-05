@@ -1,5 +1,9 @@
 {
   "index.vue": {
+    "tabBar": {
+      "order": 2,
+      "text": "Demo01"
+    },
     "navigationBarTitleText": "Demo01"
   }
 }

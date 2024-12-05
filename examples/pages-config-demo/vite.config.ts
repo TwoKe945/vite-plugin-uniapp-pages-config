@@ -8,7 +8,10 @@ export default defineConfig({
   plugins: [uni(),
     AutoImport({
       imports: ['vue', 'uni-app'],
-      resolvers: [PagesConfigResolver()]
+      resolvers: [PagesConfigResolver({
+        asName: 'PAGE_ROUTERS'
+      })],
+      dts: 'src/types/auto-import.d.ts'
     }),
     PagesConfig({
       dts: 'src/types/page-constants.d.ts'

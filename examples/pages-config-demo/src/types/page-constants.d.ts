@@ -3,11 +3,11 @@ declare module 'virtual:page-constants' {
        /**
         * Demo01
         */
-       DEMO01_INDEX: "/pages/demo01/index",
+       TAB_BAR_DEMO01_INDEX: "/pages/demo01/index",
        /**
         * Demo02
         */
-       DEMO02_INDEX: "/pages/demo02/index",
+       TAB_BAR_DEMO02_INDEX: "/pages/demo02/index",
        /**
         * Demo02_Detail
         */

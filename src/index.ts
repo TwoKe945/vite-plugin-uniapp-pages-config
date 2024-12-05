@@ -37,13 +37,52 @@ function camelToSnake(camelStr: string) {
     return camelStr.replace(/([A-Z])/g, (_match, p1) => `_${p1.toLowerCase()}`).replace(/^_/, '');
 }
 
+interface PageConfigPath {
+    originPath: string
+    absolutePath: string
+}
+interface PageConfigHandlerOptions {
+    pageConfigOriginPath: string,
+    pageConfigAbsolutePath: string,
+    pagePath: string,
+    pageBaseName: string
+    path: string
+    config: Record<string, any>,
+    key: string
+}
+
+type PageConfigHandler = (options: PageConfigHandlerOptions) => void
+
+function forEachConfig(pageDirName: string, pageConfigPaths: PageConfigPath[], ...handlers: PageConfigHandler[]) {
+    for (let pageConfigPath of pageConfigPaths) {
+        const config = JSON.parse(readFileSync(pageConfigPath.absolutePath, 'utf8'))
+        Object.keys(config).forEach(key => {
+            const pagePath = resolve(dirname(pageConfigPath.absolutePath), key)
+            if (!existsSync(pagePath)) {
+                throw new Error(`Page "${pagePath}" not found.`)
+            }
+            const pageBaseName = key.replace(extname(key), "");
+            const path = join(pageDirName, dirname(pageConfigPath.originPath), pageBaseName).replace(/\\/g, "/")
+            handlers && handlers.forEach(handler => handler({
+                pageConfigOriginPath: pageConfigPath.originPath,
+                pageConfigAbsolutePath: pageConfigPath.absolutePath,
+                pagePath: pagePath,
+                pageBaseName: pageBaseName,
+                path: path,
+                config: config,
+                key
+            }))
+        })
+    }
+}
+
 function generatePagesParams(envDir: string, pagesDir: string) {
     const cwdDir = pagesDir;
-    const pagesDirName = basename(cwdDir);
+    const pageDirName = basename(pagesDir);
 
-    const pagesConfig = sync([ `**/page.json`], { cwd: cwdDir }).map(path => ({
+    const pageConfigPaths = sync([ `**/page.json`], { cwd: cwdDir }).map(path => ({
         originPath: path,
-        path: `${cwdDir}/${path}`
+        absolutePath: `${cwdDir}/${path}`
     }))
     const originPagesConfigPath = resolve(envDir, 'src', 'pages.json');
     const originPagesConfig = JSON.parse(readFileSync(originPagesConfigPath, 'utf8'));
@@ -51,38 +90,64 @@ function generatePagesParams(envDir: string, pagesDir: string) {
         acc[cur.path] = cur
         return acc
     }, {})
+    // pages 信息处理
     const constants = {}
-    for (let pageConfigPath of pagesConfig) {
-        const config = JSON.parse(readFileSync(pageConfigPath.path, 'utf8'))
-        Object.keys(config).forEach(key => {
-            const pagePath = resolve(dirname(pageConfigPath.path), key)
-            if (!existsSync(pagePath)) {
-                throw new Error(`Page "${pagePath}" not found.`)
-            }
-            const pageBaseName = key.replace(extname(key), "");
-            const path = join(pagesDirName, dirname(pageConfigPath.originPath), pageBaseName).replace(/\\/g, "/")
-            let uniqueKey = getPageNameKey(join(dirname(pageConfigPath.originPath), camelToSnake(pageBaseName)));
-            if (config[key].tabBar) {
-                // 处理tabBar
-                uniqueKey = withTabBar(uniqueKey)
-               delete config[key].tabBar
-            }
-            const page = {
-                path,
-                style: config[key]
-            } as any
-
-            (constants as any)[uniqueKey] = page
-            if (!pagesMap[page.path] || JSON.stringify(pagesMap[page.path]).trim() != JSON.stringify(page).trim()) {
-                pagesMap[page.path] = page
-            }
-        })
+    function handlePages(options: PageConfigHandlerOptions) {
+        const { key, path, pageConfigOriginPath, pageBaseName } = options;
+        let uniqueKey = getPageNameKey(join(dirname(pageConfigOriginPath), camelToSnake(pageBaseName)));
+        if (options.config[key].tabBar) {
+            // 处理tabBar
+            uniqueKey = withTabBar(uniqueKey)
+            delete options.config[key].tabBar
+        }
+        const page = {
+            path: path,
+            style: options.config[key]
+        } as any
+        (constants as any)[uniqueKey] = page
+        if (!pagesMap[page.path] || JSON.stringify(pagesMap[page.path]).trim() != JSON.stringify(page).trim()) {
+            pagesMap[page.path] = page
+        }
     }
+
+    // tabBar信息处理
+    const tabBars: any[] = []
+    function handleTabBar(options: PageConfigHandlerOptions) {
+        const { key, config, path } = options;
+        if (config[key].tabBar && typeof config[key].tabBar === 'object') {
+            const tabBar = {
+               pagePath: path,
+               order: 1,
+               ...config[key].tabBar
+            }
+            tabBars.push(tabBar)
+        }
+    }
+
+    forEachConfig(pageDirName, pageConfigPaths, handleTabBar, handlePages)
+
+    // 处理pages
     const pages = []
     for (let key in pagesMap) {
         pages.push(pagesMap[key])
     }
     originPagesConfig['pages'] = pages
+
+    // 处理tabBar
+    let originTabBar = originPagesConfig['tabBar']
+    if (!originTabBar) {
+        originTabBar = {
+            "color": "#aaa",
+            "selectedColor": "#000",
+        }
+    }
+    originTabBar['list'] = tabBars.sort((a, b) => a.order - b.order).map(item => {
+        delete item.order
+        return item;
+    })
+    originPagesConfig['tabBar'] = originTabBar
+
+
     return {
         pages: originPagesConfig,
         constants
@@ -151,12 +216,18 @@ export function PagesConfig(options?: PagesConfigOptions) {
     } as Plugin
 }
 
-export function PagesConfigResolver() {
+interface PagesConfigResolverOptions {
+    asName?: string
+}
+
+export function PagesConfigResolver(options?: PagesConfigResolverOptions) {
+    const { asName = CONSTANT_NAME } = (options || {})
     return (name: string) => {
         if (name === CONSTANT_NAME) {
             return {
                 name: name,
                 from: virtualModuleId,
+                as: asName
             };
         }
     }

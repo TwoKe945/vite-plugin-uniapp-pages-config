@@ -7,7 +7,7 @@
 export {}
 declare global {
   const EffectScope: typeof import('vue')['EffectScope']
-  const PAGES: typeof import('virtual:page-constants')['PAGES']
+  const PAGE_ROUTERS: typeof import('virtual:page-constants')['PAGES']
   const computed: typeof import('vue')['computed']
   const createApp: typeof import('vue')['createApp']
   const customRef: typeof import('vue')['customRef']

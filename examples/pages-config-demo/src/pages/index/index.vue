@@ -14,10 +14,10 @@ const title = ref('to demo02')
 
 
 function handleToDemo02() {
-  console.log(PAGES.DEMO02_INDEX)
-  uni.navigateTo({
-    url: PAGES.DEMO02_INDEX
-  })
+  console.log(PAGE_ROUTERS)
+  // uni.navigateTo({
+  //   url: PAGES.DEMO02_INDEX
+  // })
 }
 </script>
 

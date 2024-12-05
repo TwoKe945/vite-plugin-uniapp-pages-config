@@ -41,6 +41,14 @@
       {
         "pagePath": "pages/index/index",
         "text": "首页"
+      },
+      {
+        "pagePath": "pages/demo01/index",
+        "text": "Demo01"
+      },
+      {
+        "pagePath": "pages/demo02/index",
+        "text": "Demo02"
       }
     ]
   }

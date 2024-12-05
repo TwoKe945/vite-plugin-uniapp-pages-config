@@ -8,7 +8,6 @@
 - pages.json 分文件配置
 - pages.json path 路由常量定义
 
-
 ## 快速使用
 
 ```shell
@@ -23,26 +22,81 @@ yarn add -D vite-plugin-uniapp-pages-config
 pnpm add -D vite-plugin-uniapp-pages-config
 ```
 
+**vite.config.[jt]s**
+```ts
+import { defineConfig } from "vite";
+import uni from "@dcloudio/vite-plugin-uni";
+import AutoImport from 'unplugin-auto-import/vite'
+import { PagesConfig, PagesConfigResolver } from 'vite-plugin-uniapp-pages-config'
+
+// https://vitejs.dev/config/
+export default defineConfig({
+    plugins: [uni(),
+        AutoImport({
+            imports: ['vue', 'uni-app'],
+            // 默认常量名：PAGES
+            // resolvers: [PagesConfigResolver()],
+            resolvers: [PagesConfigResolver({
+                // 常量名重命名
+                asName: 'PAGE_ROUTERS'
+            })],
+            dts: 'src/types/auto-import.d.ts'
+        }),
+        PagesConfig({
+            // 默认不产生dts
+            dts: 'src/types/page-constants.d.ts'
+        })
+    ],
+});
+```
+
 ### 分文件配置
 
-**src/pages/demo02/page.json**
-```json
-{
-  "index.vue": { // 自定当前目录下文件名，配置内容参考uniapp的pages.style的配置
-    "navigationBarTitleText": "Demo02"
-  }
-}
+#### index目录下，一个页面配置
+```shell
+├─index
+│     index.vue
+│     page.json
 ```
+
 **src/pages/index/page.json**
 ```json
 {
   "index.vue": {
-    "tabBar": true, // 标识这是一个tabbar, 这里会影响常量的生成，会给常量添加一个前缀TAR_BAR_
+    "tabBar": { // 标识这是一个tabbar, 这里会影响常量的生成，会给常量添加一个前缀TAR_BAR_，可以定义tabbar的属性，pagePath会自动填充不用配置
+      "order": 1, // tabbar排序属性，默认值为1
+      "text": "首页" 
+    },
     "navigationBarTitleText": "首页"
   }
 }
 ```
-**生成的pages.json**
+### demo02目录下，多个页面配置
+```shell
+├─demo02
+│     detail.vue
+│     index.vue
+│     page.json
+```
+
+**src/pages/demo02/page.json**
+```json
+{
+  "index.vue": {
+    "tabBar": {
+      "order": 3,
+      "text": "Demo02"
+    }, 
+    "navigationBarTitleText": "Demo02"
+  },
+  "detail.vue": { // 自定当前目录下文件名，配置内容参考uniapp的pages.style的配置
+    "navigationBarTitleText": "Demo02_Detail"
+  }
+}
+
+```
+
+#### 生成的pages.json
 
 > 注意事项：pages.json 的注释必须删除，不然会读取失败
 
@@ -60,6 +114,18 @@ pnpm add -D vite-plugin-uniapp-pages-config
       "style": {
         "navigationBarTitleText": "Demo02"
       }
+    },
+    {
+      "path": "pages/demo01/index",
+      "style": {
+        "navigationBarTitleText": "Demo01"
+      }
+    },
+    {
+      "path": "pages/demo02/detail",
+      "style": {
+        "navigationBarTitleText": "Demo02_Detail"
+      }
     }
   ],
   "globalStyle": {
@@ -68,16 +134,24 @@ pnpm add -D vite-plugin-uniapp-pages-config
     "navigationBarBackgroundColor": "#F8F8F8",
     "backgroundColor": "#F8F8F8"
   },
-  "tabBar": {
+  "tabBar": { // 配置了tbbar，若tabBar原配置不存在，默认值 {color: "#aaa", selectedColor: "#000"}
     "color": "#494949",
     "selectedColor": "#8f60df",
     "backgroundColor": "#fff",
     "height": "60px",
     "borderStyle": "black",
-    "list": [
+    "list": [ // 配置了tabbar会覆盖
       {
         "pagePath": "pages/index/index",
         "text": "首页"
+      },
+      {
+        "pagePath": "pages/demo01/index",
+        "text": "Demo01"
+      },
+      {
+        "pagePath": "pages/demo02/index",
+        "text": "Demo02"
       }
     ]
   }
@@ -98,30 +172,6 @@ src/pages/demo02/detail.vue => PAGES.DEMO02_DETAIL = "/pages/demo02/detail";
 src/pages/demo02/detailForm.vue => PAGES.DEMO02_DETAIL_FORM = "/pages/demo02/detailForm";
 ```
 
-**vite.config.ts**
-
-```ts
-import { defineConfig } from "vite";
-import uni from "@dcloudio/vite-plugin-uni";
-import AutoImport from 'unplugin-auto-import/vite'
-import { PagesConfig, PagesConfigResolver } from 'vite-plugin-uniapp-pages-config'
-
-// https://vitejs.dev/config/
-export default defineConfig({
-    plugins: [uni(),
-        AutoImport({
-            imports: ['vue', 'uni-app'],
-            // 自动导入常量
-            resolvers: [PagesConfigResolver()]
-        }),
-        PagesConfig({
-            // 常量DTS输出位置
-            dts: 'src/types/page-constants.d.ts'
-        })
-    ],
-});
-```
-
 **src/pages/index/index.vue**
 
 ```vue
@@ -140,48 +190,16 @@ import { ref } from 'vue'
 // import { PAGES } from 'virtual:page-constants'
 const title = ref('to demo02')
 
-
 function handleToDemo02() {
   console.log(PAGES.DEMO02_INDEX)
+  // console.log(PAGE_ROUTERS.DEMO02_INDEX) // 配置了asName的使用方法
   uni.navigateTo({
-    url: PAGES.DEMO02_INDEX
+    url: PAGES.DEMO02_INDEX,
+    // url: PAGE_ROUTERS.DEMO02_INDEX, // 配置了asName的使用方法cd
   })
 }
 </script>
-
-<style>
-.content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-.logo {
-  height: 200rpx;
-  width: 200rpx;
-  margin-top: 200rpx;
-  margin-left: auto;
-  margin-right: auto;
-  margin-bottom: 50rpx;
-}
-
-.text-area {
-  display: flex;
-  justify-content: center;
-}
-
-.title {
-  font-size: 36rpx;
-  color: #8f8f94;
-}
-</style>
 ```
-
-
-
-
-
 
 
 ## License
