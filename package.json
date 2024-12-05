@@ -10,10 +10,13 @@
     "build": "unbuild",
     "dev": "unbuild --stub",
     "prepublishOnly": "pnpm build",
-    "generate-changelog:first-release": "commit-and-tag-version --first-release",
-    "generate-changelog": "commit-and-tag-version",
-    "release": " bumpp && npm publish "
+    "change-version": "npx bumpp --no-commit --no-tag --no-push",
+    "changelog": "commit-and-tag-version & git commit CHANGELOG.md -m \"docs: update changelog\"",
+    "changelog:first": "commit-and-tag-version --first-release & git commit CHANGELOG.md -m \"docs: update changelog\"",
+    "release:first": "npm run change-version & npm run changelog:first & npm publish",
+    "release": "npm run change-version & npm run changelog & npm publish"
   },
+  "releaseCount": 0,
   "build": {
     "failOnWarn": false
   },
