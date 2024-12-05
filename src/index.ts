@@ -120,7 +120,7 @@ function generatePagesParams(envDir: string, pagesDir: string) {
             let tabBar = {
                 pagePath: path,
                 order: 1,
-                title: navigationBarTitleText
+                text: navigationBarTitleText
             }
             let enableTabBar = false;
             if (type === 'number') { // 数字直接排序
