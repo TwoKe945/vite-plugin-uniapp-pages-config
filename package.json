@@ -10,6 +10,7 @@
     "build": "unbuild",
     "dev": "unbuild --stub",
     "prepublishOnly": "pnpm build",
+    "generate-changelog": "commit-and-tag-version --first-release",
     "release": " bumpp --commit --push --tag && npm publish"
   },
   "build": {
@@ -50,6 +51,8 @@
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^22.10.1",
     "bumpp": "^9.8.1",
+    "commit-and-tag-version": "^12.5.0",
+    "conventional-changelog-conventionalcommits": "^8.0.0",
     "ejs": "^3.1.10",
     "fast-glob": "^3.3.2",
     "unbuild": "^2.0.0"
