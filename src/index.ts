@@ -114,18 +114,36 @@ function generatePagesParams(envDir: string, pagesDir: string) {
     const tabBars: any[] = []
     function handleTabBar(options: PageConfigHandlerOptions) {
         const { key, config, path } = options;
-        if (config[key].tabBar && typeof config[key].tabBar === 'object') {
-            const tabBar = {
-               pagePath: path,
-               order: 1,
-               ...config[key].tabBar
+        if (config[key].tabBar != undefined && config[key].tabBar != null) {
+            const { navigationBarTitleText = key } = (pagesMap[path].style || {})
+            const type = typeof config[key].tabBar;
+            let tabBar = {
+                pagePath: path,
+                order: 1,
+                title: navigationBarTitleText
             }
-            tabBars.push(tabBar)
+            let enableTabBar = false;
+            if (type === 'number') { // 数字直接排序
+                tabBar.order = config[key].tabBar;
+                enableTabBar = true;
+            } else if (type === 'object') { // 对象
+                tabBar = {
+                    ...tabBar,
+                    ...config[key].tabBar
+                }
+                enableTabBar = true;
+            } else if (type === 'boolean') { // 默认
+                enableTabBar = true;
+            }
+            if (enableTabBar) {
+                tabBars.push(tabBar)
+            }
         }
+
     }
 
     forEachConfig(pageDirName, pageConfigPaths, handleTabBar, handlePages)
-
+    console.log(tabBars)
     // 处理pages
     const pages = []
     for (let key in pagesMap) {

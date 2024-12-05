@@ -71,6 +71,29 @@ export default defineConfig({
   }
 }
 ```
+
+##### 简约配置
+
+```json
+{
+  "index.vue": {
+    "tabBar": true, // => {  "pagePath: "pages/index/index", "text": "首页"  }
+    "navigationBarTitleText": "首页"
+  }
+}
+```
+
+```json
+{
+  "index.vue": {
+    "tabBar": 1, // 和上面同样的配置，但是会改变tabBar的顺序 => {  "pagePath: "pages/index/index", "text": "首页"  }
+    "navigationBarTitleText": "首页"
+  }
+}
+```
+
+
+
 ### demo02目录下，多个页面配置
 ```shell
 ├─demo02

@@ -1,9 +1,6 @@
 {
   "index.vue": {
-    "tabBar": {
-      "order": 1,
-      "text": "首页"
-    },
+    "tabBar": 1,
     "navigationBarTitleText": "首页"
   }
 }
