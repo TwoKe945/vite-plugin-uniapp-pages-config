@@ -143,7 +143,7 @@ function generatePagesParams(envDir: string, pagesDir: string) {
     }
 
     forEachConfig(pageDirName, pageConfigPaths, handleTabBar, handlePages)
-    console.log(tabBars)
+
     // 处理pages
     const pages = []
     for (let key in pagesMap) {
