@@ -15,6 +15,7 @@
     { "type": "tool", "section": "🚀 tool | 工具升级" },
     { "type": "ci", "section": "👷 Continuous Integration | CI 配置" }
   ],
+  "releaseCount": 0,
   "skip": {
     "bump": true,
     "changelog": false,
