@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-uniapp-pages-config",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -12,7 +12,7 @@
     "prepublishOnly": "pnpm build",
     "generate-changelog:first-release": "commit-and-tag-version --first-release",
     "generate-changelog": "commit-and-tag-version",
-    "release": " bumpp && commit-and-tag-version && npm publish "
+    "release": " bumpp && npm publish "
   },
   "build": {
     "failOnWarn": false
