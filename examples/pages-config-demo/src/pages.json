@@ -11,6 +11,18 @@
       "style": {
         "navigationBarTitleText": "Demo02"
       }
+    },
+    {
+      "path": "pages/demo01/index",
+      "style": {
+        "navigationBarTitleText": "Demo01"
+      }
+    },
+    {
+      "path": "pages/demo02/detail",
+      "style": {
+        "navigationBarTitleText": "Demo02_Detail"
+      }
     }
   ],
   "globalStyle": {

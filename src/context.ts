@@ -1,4 +1,6 @@
 import { PagesConfigOptions } from './types'
+import { cwd } from 'process'
+import {resolve} from "path";
 
 
 export const CONSTANT_NAME = "PAGES";
@@ -13,11 +15,17 @@ function withDefaults(options: PagesConfigOptions, defaultValue: PagesConfigOpti
 export class Context {
 
     private _constantVirtualCode?:string;
+    private _cwd:string
 
     constructor(private options?: PagesConfigOptions) {
+        this._cwd = cwd();
         this.options = withDefaults(options || {}, {
-            dts: false
+            dts: false,
+            pagesDir:  resolve(this._cwd, "src", "pages")
         })
+    }
+    get cwd() {
+        return this._cwd
     }
 
     get constantName() {
@@ -25,7 +33,7 @@ export class Context {
     }
 
     get pagesDir() {
-        return this.options!.pagesDir
+        return this.options!.pagesDir!
     }
 
     get dtsName() {

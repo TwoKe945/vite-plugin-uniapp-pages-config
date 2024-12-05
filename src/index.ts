@@ -37,8 +37,8 @@ function camelToSnake(camelStr: string) {
     return camelStr.replace(/([A-Z])/g, (_match, p1) => `_${p1.toLowerCase()}`).replace(/^_/, '');
 }
 
-function generatePagesParams(envDir: string, pagesDir?: string) {
-    const cwdDir = pagesDir || resolve(envDir, 'src', 'pages');
+function generatePagesParams(envDir: string, pagesDir: string) {
+    const cwdDir = pagesDir;
     const pagesDirName = basename(cwdDir);
 
     const pagesConfig = sync([ `**/page.json`], { cwd: cwdDir }).map(path => ({
@@ -101,7 +101,7 @@ function createPagesConstants(constantName:string, constants: Record<string, {
 
 }
 
-async function writeDeclaration(envDir: string, constantPathName: string, constantName:string, constants: Record<string, {
+async function writePagesConstantDeclaration(envDir: string, constantPathName: string, constantName:string, constants: Record<string, {
     path: string,
     style: {  navigationBarTitleText: string  },
 }>) {
@@ -117,33 +117,37 @@ async function writeDeclaration(envDir: string, constantPathName: string, consta
     await writeFile(resolve(dtsDir, basename(constantPathName)), declaration, 'utf-8');
 }
 
+async function generateFiles(ctx: Context) {
+    // 生成pages.json文件
+    const { pages, constants } = generatePagesParams(ctx.cwd, ctx.pagesDir);
+    // 生成pages.json
+    const outputFilePath = resolve(ctx.cwd, 'src', 'pages.json');
+    await writeFile(outputFilePath, JSON.stringify(pages, null, 2), 'utf-8');
+    // 生成常量
+    if (ctx.dts) {
+        ctx.constant = createPagesConstants(ctx.constantName , constants)
+        await writePagesConstantDeclaration(ctx.cwd, ctx.dtsName, ctx.constantName , constants)
+    }
+}
+
 export function PagesConfig(options?: PagesConfigOptions) {
+    // 上下文处理
     const ctx = new Context(options);
     return {
         name: 'vite-plugin-uniapp-pages-config',
-        resolveId(id) {
+        resolveId(id, _imports, _options) {
             if (id === virtualModuleId) {
                 return resolvedVirtualModuleId;
             }
         },
-        load(id) {
+        load(id, _options) {
             if (id === resolvedVirtualModuleId) {
                 return ctx.constant;
             }
         },
-        async configResolved(config) {
-            const envDir = config.envDir;
-            // 生成pages.json文件
-            const { pages, constants } = generatePagesParams(envDir, ctx.pagesDir);
-            // 生成pages.json
-            const outputFilePath = resolve(envDir, 'src', 'pages.json');
-            await writeFile(outputFilePath, JSON.stringify(pages, null, 2), 'utf-8');
-            // 生成常量
-            if (ctx.dts) {
-                ctx.constant = createPagesConstants(ctx.constantName , constants)
-                await writeDeclaration(envDir, ctx.dtsName, ctx.constantName , constants)
-            }
-        },
+        async buildStart() {
+            await generateFiles(ctx)
+        }
     } as Plugin
 }
 

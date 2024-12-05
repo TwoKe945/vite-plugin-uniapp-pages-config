@@ -1,5 +1,8 @@
 {
   "index.vue": {
     "navigationBarTitleText": "Demo02"
+  },
+  "detail.vue": {
+    "navigationBarTitleText": "Demo02_Detail"
   }
 }
